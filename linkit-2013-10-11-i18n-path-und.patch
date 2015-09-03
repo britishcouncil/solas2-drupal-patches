@@ -1,0 +1,52 @@
+diff --git a/profiles/solas2/modules/contrib/linkit/plugins/linkit_plugins/linkit-plugin-entity.class.php b/profiles/solas2/modules/contrib/linkit/plugins/linkit_plugins/linkit-plugin-entity.class.php
+index 68ea06d..8599040 100644
+--- a/profiles/solas2/modules/contrib/linkit/plugins/linkit_plugins/linkit-plugin-entity.class.php
++++ b/profiles/solas2/modules/contrib/linkit/plugins/linkit_plugins/linkit-plugin-entity.class.php
+@@ -88,7 +88,15 @@ class LinkitPluginEntity extends LinkitPlugin {
+     // We have to set alias to TRUE as we don't want an alias back.
+     $options += array('alias' => TRUE);
+ 
+-    return parent::buildPath($uri['path'], $options);
++    // If i18n is enabled, we have to set language to entity language needed by url function.
++    if (module_exists('i18n') && $entity->language != LANGUAGE_NONE) {
++      $options['language'] = $entity->language;
++    }
++
++    $language = i18n_language_load($options['language']);
++    $alias = url($uri['path'], array('language' => $language));
++    $alias = trim($alias, '/');
++    return parent::buildPath($alias, $options);
+   }
+ 
+   /**
+@@ -285,4 +293,4 @@ class LinkitPluginEntity extends LinkitPlugin {
+     }
+     return $form;
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/profiles/solas2/modules/contrib/linkit/plugins/linkit_plugins/linkit-plugin-node.class.php b/profiles/solas2/modules/contrib/linkit/plugins/linkit_plugins/linkit-plugin-node.class.php
+index bef6d79..492d437 100644
+--- a/profiles/solas2/modules/contrib/linkit/plugins/linkit_plugins/linkit-plugin-node.class.php
++++ b/profiles/solas2/modules/contrib/linkit/plugins/linkit_plugins/linkit-plugin-node.class.php
+@@ -40,6 +40,12 @@ class LinkitPluginNode extends LinkitPluginEntity {
+     if ($this->conf['include_unpublished'] == 0) {
+       $this->query->propertyCondition('status', NODE_PUBLISHED);
+     }
++    // Search through nodes of any language.
++    if (module_exists('i18n')) {
++      $languages = array_keys(i18n_language_list());
++      $languages[] = LANGUAGE_NONE;
++      $this->query->propertyCondition('language', $languages, 'IN');
++    }
+   }
+ 
+   /**
+@@ -63,4 +69,4 @@ class LinkitPluginNode extends LinkitPluginEntity {
+ 
+     return $form;
+   }
+-}
+\ No newline at end of file
++}
