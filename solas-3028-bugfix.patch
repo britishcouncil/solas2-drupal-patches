@@ -1,0 +1,24 @@
+diff --git a/includes/query.inc b/includes/query.inc
+index e9ccc20..cf872aa 100644
+--- a/includes/query.inc
++++ b/includes/query.inc
+@@ -486,6 +486,7 @@ class SearchApiQuery implements SearchApiQueryInterface {
+         return array('#conjunction' => $this->options['conjunction'], $keys);
+ 
+       case 'terms':
++        $keys = str_replace('"',' " ', $keys);
+         $ret = preg_split('/\s+/u', $keys);
+         $quoted = FALSE;
+         $str = '';
+diff --git a/service.inc b/service.inc
+index e15ca89..a438d98 100644
+--- a/service.inc
++++ b/service.inc
+@@ -863,6 +863,7 @@ class SearchApiElasticsearchService extends SearchApiAbstractService {
+ 
+     foreach (element_children($keys) as $key) {
+       $value = $keys[$key];
++      $value = trim($value, " ");
+ 
+       if (empty($value)) {
+         continue;
