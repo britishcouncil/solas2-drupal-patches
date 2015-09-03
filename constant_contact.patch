@@ -1,0 +1,52 @@
+diff --git a/profiles/solas2/modules/contrib/constant_contact/constant_contact.module b/profiles/solas2/modules/contrib/constant_contact/constant_contact.module
+index d490544..a2f0ae0 100755
+--- a/profiles/solas2/modules/contrib/constant_contact/constant_contact.module
++++ b/profiles/solas2/modules/contrib/constant_contact/constant_contact.module
+@@ -1099,7 +1099,6 @@ function constant_contact_signup_form($form, &$form_state, $delta)
+ 	return $form;
+ }
+ 
+-
+ /**
+  * Custom signup form submit handler
+  */
+@@ -1178,25 +1177,30 @@ function constant_contact_signup_form_submit($form, &$form_state)
+ 	$lists = array_keys($lists);
+ 
+ 	if($contact):
+-		form_set_error('cc_email_'.$delta, t('Your email address is already subscribed'));
++    // SV: Old logic was to fail with error message if contact already exists.
++    // New logic is to continue without error and merge selected lists with
++    // those already assigned to contact. (Unselected lists are not removed
++    // from contact as this form is unprotected.)
++    $loaded_contact = $cc->get_contact($contact[id]);
++    $existing_lists = $loaded_contact['lists'];
++    $lists = array_unique(array_merge($lists, $existing_lists));
++    $status = $cc->update_contact($contact['id'], $user_email, $lists);
+ 	else:
+ 		$status = $cc->create_contact($user_email, $lists, $fields);
++  endif;
+ 
+-		if($status):
+-			if(!$redirect_to):
+-				drupal_set_message(t('Success, you are now subscribed to our mailing list'));
+-			endif;
+-		else:
+-			form_set_error('cc_email_'.$delta, t('Sorry, there was a problem, please ensure your details are valid and try again'));
++  if($status):
++		if(!$redirect_to):
++			drupal_set_message(t('Success, you are now subscribed to our mailing list'));
+ 		endif;
+-
++	else:
++		form_set_error('cc_email_'.$delta, t('Sorry, there was a problem, please ensure your details are valid and try again'));
+ 	endif;
+ 
+ 	$form_state['redirect'] = $redirect_to;
+ 	return;
+ }
+ 
+-
+ /**
+  * Cron job to handle syncing unsubscribers
+  */
