@@ -1,0 +1,20 @@
+diff --git a/profiles/solas2/modules/contrib/linkit/plugins/linkit_insert/raw_url/raw_url.js b/profiles/solas2/modules/contrib/linkit/plugins/linkit_insert/raw_url/raw_url.js
+index 8db1153..28f3cc7 100644
+--- a/profiles/solas2/modules/contrib/linkit/plugins/linkit_insert/raw_url/raw_url.js
++++ b/profiles/solas2/modules/contrib/linkit/plugins/linkit_insert/raw_url/raw_url.js
+@@ -8,9 +8,14 @@ Drupal.linkit.addInsertPlugin('raw_url',  {
+ 
+     // For link fields we need to remove the first slash.
+     if (typeof settings.no_slash != 'undefined' && settings.no_slash) {
++      var pathPrefix = Drupal.settings.pathPrefix;
+       if (data.path.charAt(0) == '/') {
+         data.path = data.path.substring(1);
+       }
++      // Remove language alias prefix from the path when on a page which includes a language alias in it's URL.
++      if (data.path.indexOf(pathPrefix) == 0 && pathPrefix !== '') {
++        data.path = data.path.substring(pathPrefix.length);
++      }
+     }
+ 
+     return data.path;
+-- 
