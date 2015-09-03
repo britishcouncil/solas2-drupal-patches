@@ -1,7 +1,7 @@
-diff --git a/profiles/solas2/modules/contrib/linkit/plugins/linkit_insert/raw_url/raw_url.js b/profiles/solas2/modules/contrib/linkit/plugins/linkit_insert/raw_url/raw_url.js
+diff --git a/plugins/linkit_insert/raw_url/raw_url.js b/plugins/linkit_insert/raw_url/raw_url.js
 index 8db1153..28f3cc7 100644
---- a/profiles/solas2/modules/contrib/linkit/plugins/linkit_insert/raw_url/raw_url.js
-+++ b/profiles/solas2/modules/contrib/linkit/plugins/linkit_insert/raw_url/raw_url.js
+--- a/plugins/linkit_insert/raw_url/raw_url.js
++++ b/plugins/linkit_insert/raw_url/raw_url.js
 @@ -8,9 +8,14 @@ Drupal.linkit.addInsertPlugin('raw_url',  {
  
      // For link fields we need to remove the first slash.
