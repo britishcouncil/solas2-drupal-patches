@@ -1,7 +1,7 @@
-diff --git a/profiles/solas2/modules/contrib/linkit/plugins/linkit_plugins/linkit-plugin-entity.class.php b/profiles/solas2/modules/contrib/linkit/plugins/linkit_plugins/linkit-plugin-entity.class.php
+diff --git a/plugins/linkit_plugins/linkit-plugin-entity.class.php b/plugins/linkit_plugins/linkit-plugin-entity.class.php
 index 68ea06d..8599040 100644
---- a/profiles/solas2/modules/contrib/linkit/plugins/linkit_plugins/linkit-plugin-entity.class.php
-+++ b/profiles/solas2/modules/contrib/linkit/plugins/linkit_plugins/linkit-plugin-entity.class.php
+--- a/plugins/linkit_plugins/linkit-plugin-entity.class.php
++++ b/plugins/linkit_plugins/linkit-plugin-entity.class.php
 @@ -88,7 +88,15 @@ class LinkitPluginEntity extends LinkitPlugin {
      // We have to set alias to TRUE as we don't want an alias back.
      $options += array('alias' => TRUE);
@@ -26,10 +26,10 @@ index 68ea06d..8599040 100644
 -}
 \ No newline at end of file
 +}
-diff --git a/profiles/solas2/modules/contrib/linkit/plugins/linkit_plugins/linkit-plugin-node.class.php b/profiles/solas2/modules/contrib/linkit/plugins/linkit_plugins/linkit-plugin-node.class.php
+diff --git a/plugins/linkit_plugins/linkit-plugin-node.class.php b/plugins/linkit_plugins/linkit-plugin-node.class.php
 index bef6d79..492d437 100644
---- a/profiles/solas2/modules/contrib/linkit/plugins/linkit_plugins/linkit-plugin-node.class.php
-+++ b/profiles/solas2/modules/contrib/linkit/plugins/linkit_plugins/linkit-plugin-node.class.php
+--- a/plugins/linkit_plugins/linkit-plugin-node.class.php
++++ b/plugins/linkit_plugins/linkit-plugin-node.class.php
 @@ -40,6 +40,12 @@ class LinkitPluginNode extends LinkitPluginEntity {
      if ($this->conf['include_unpublished'] == 0) {
        $this->query->propertyCondition('status', NODE_PUBLISHED);
