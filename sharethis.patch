@@ -1,7 +1,7 @@
-diff --git a/profiles/solas2/modules/contrib/sharethis/sharethis.module b/profiles/solas2/modules/contrib/sharethis/sharethis.module
+diff --git a/sharethis.module b/sharethis.module
 index b11b052..1bae3d5 100644
---- a/profiles/solas2/modules/contrib/sharethis/sharethis.module
-+++ b/profiles/solas2/modules/contrib/sharethis/sharethis.module
+--- a/sharethis.module
++++ b/sharethis.module
 @@ -450,25 +450,21 @@ function sharethis_get_button_HTML($data_options, $mPath, $mTitle) {
    if ($data_options['late_load']) {
      $st_js_options['__st_loadLate'] = TRUE;
