@@ -1,0 +1,40 @@
+diff --git a/profiles/solas2/modules/contrib/sharethis/sharethis.module b/profiles/solas2/modules/contrib/sharethis/sharethis.module
+index b11b052..1bae3d5 100644
+--- a/profiles/solas2/modules/contrib/sharethis/sharethis.module
++++ b/profiles/solas2/modules/contrib/sharethis/sharethis.module
+@@ -450,25 +450,21 @@ function sharethis_get_button_HTML($data_options, $mPath, $mTitle) {
+   if ($data_options['late_load']) {
+     $st_js_options['__st_loadLate'] = TRUE;
+   }
+-  $st_js = "<script type='text/javascript'>";
+-  foreach ($st_js_options as $name => $value) {
+-    $st_js .= 'var ' . $name . ' = ' . drupal_json_encode($value) . ';';
+-  }
+-  $st_js .= '</script>';
+-
+-  // Check if we're using SSL or not.
+-  if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') {
+-    $st_js .= "<script type='text/javascript' src='https://ws.sharethis.com/button/buttons.js'></script>";
+-  }
+-  else {
+-    $st_js .= "<script type='text/javascript' src='http://w.sharethis.com/button/buttons.js'></script>";
+-  }
+ 
+   // Provide the publisher ID.
+   $stlight = drupal_json_encode(array(
+     'publisher' => $data_options['publisherID'],
+   ));
+-  $st_js .= "<script type='text/javascript'>stLight.options($stlight);</script>";
++
++  // Refactoring script output: Wrapping the variables and stLight.options within the script tag
++  // This is mainly due to a problem with an online test tool known as Cloudmonitor
++  $st_js = '';
++  $st_js .= '<script type="text/javascript" src="//ws.sharethis.com/button/buttons.js">';
++  foreach ($st_js_options as $name => $value) {
++    $st_js .= 'var ' . $name . ' = ' . drupal_json_encode($value) . ";\n";
++  }
++  $st_js .= 'stLight.options($stlight);';
++  $st_js .= '</script>';
+   return '<div class="sharethis-wrapper">' . $st_spans . $st_js . '</div>';
+ }
+ 
