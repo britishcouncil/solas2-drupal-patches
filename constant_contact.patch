@@ -1,7 +1,7 @@
-diff --git a/profiles/solas2/modules/contrib/constant_contact/constant_contact.module b/profiles/solas2/modules/contrib/constant_contact/constant_contact.module
+diff --git a/constant_contact.module b/constant_contact.module
 index d490544..a2f0ae0 100755
---- a/profiles/solas2/modules/contrib/constant_contact/constant_contact.module
-+++ b/profiles/solas2/modules/contrib/constant_contact/constant_contact.module
+--- a/constant_contact.module
++++ b/constant_contact.module
 @@ -1099,7 +1099,6 @@ function constant_contact_signup_form($form, &$form_state, $delta)
  	return $form;
  }
