@@ -1,0 +1,71 @@
+diff --git a/editors/tinymce/linkitDialog.js b/editors/tinymce/linkitDialog.js
+index 86f4726..705ed37 100644
+--- a/editors/tinymce/linkitDialog.js
++++ b/editors/tinymce/linkitDialog.js
+@@ -55,6 +55,7 @@ Drupal.linkit.registerDialogHelper('tinymce', {
+    *   The link object.
+    */
+   insertLink : function(data) {
++    var pathPrefix = Drupal.settings.pathPrefix;
+     var editor = Drupal.settings.linkit.currentInstance.editor,
+     element = editor.dom.getParent(editor.selection.getNode(), 'A');
+ 
+@@ -65,6 +66,9 @@ Drupal.linkit.registerDialogHelper('tinymce', {
+ 
+     // Set undo begin point.
+     editor.execCommand("mceBeginUndoLevel");
+-     data.attributes.href = data.path;
++     data.attributes.href = "/" + data.path;
+     // No link element selected, create a new anchor element.
+     if (element == null) {
+@@ -99,4 +103,4 @@ Drupal.linkit.registerDialogHelper('tinymce', {
+   }
+ });
+ 
+-})(jQuery);
+\ No newline at end of file
++})(jQuery);
+diff --git a/plugins/linkit_insert/raw_url/raw_url.js b/plugins/linkit_insert/raw_url/raw_url.js
+index 54661de..8957390 100644
+--- a/plugins/linkit_insert/raw_url/raw_url.js
++++ b/plugins/linkit_insert/raw_url/raw_url.js
+@@ -5,6 +5,13 @@
+ (function ($) {
+ Drupal.linkit.registerInsertPlugin('raw_url',  {
+   insert : function(data, settings) {
++    var pathPrefix = Drupal.settings.pathPrefix;
++
++    // Remove language alias prefix from the path when on a page which includes a language alias in it's URL.
++    if (data.path.indexOf(pathPrefix) === 0 && pathPrefix !== '') {
++      data.path = data.path.substring(pathPrefix.length);
++    }
++
+     return data.path;
+   }
+ });
+diff --git a/plugins/linkit_search/entity.class.php b/plugins/linkit_search/entity.class.php
+index 853f6f5..67b4436 100644
+--- a/plugins/linkit_search/entity.class.php
++++ b/plugins/linkit_search/entity.class.php
+@@ -131,6 +131,7 @@ class LinkitSearchPluginEntity extends LinkitSearchPlugin {
+    *   uri of its own.
+    */
+   function createPath($entity) {
++    global $language;
+     // Create the URI for the entity.
+     $uri = entity_uri($this->plugin['entity_type'], $entity);
+ 
+@@ -145,8 +146,13 @@ class LinkitSearchPluginEntity extends LinkitSearchPlugin {
+         $options['language'] = $languages[$entity->language];
+       }
+     }
++
++    $alias = url($uri['path'], array('language' => $language->language));
++    $alias = trim($alias, '/');
++
+     // Process the uri with the insert plugin.
+-    $path = linkit_get_insert_plugin_processed_path($this->profile, $uri['path'], $options);
++    $path = trim(linkit_get_insert_plugin_processed_path($this->profile, $alias, $options),'/');
++
+     return $path;
+   }
