@@ -1,16 +1,7 @@
 diff --git a/editors/tinymce/linkitDialog.js b/editors/tinymce/linkitDialog.js
-index 86f4726..7fa164f 100644
+index 86f4726..8e34c79 100644
 --- a/editors/tinymce/linkitDialog.js
 +++ b/editors/tinymce/linkitDialog.js
-@@ -65,7 +65,7 @@ Drupal.linkit.registerDialogHelper('tinymce', {
- 
-     // Set undo begin point.
-     editor.execCommand("mceBeginUndoLevel");
--    data.attributes.href = data.path;
-+    data.attributes.href = '/' + data.path;
-     // No link element selected, create a new anchor element.
-     if (element == null) {
-       // If there is no selection, lets inser a new element.
 @@ -99,4 +99,4 @@ Drupal.linkit.registerDialogHelper('tinymce', {
    }
  });
@@ -18,48 +9,58 @@ index 86f4726..7fa164f 100644
 -})(jQuery);
 \ No newline at end of file
 +})(jQuery);
-diff --git a/plugins/linkit_insert/raw_url/raw_url.js b/plugins/linkit_insert/raw_url/raw_url.js
-index 54661de..8957390 100644
---- a/plugins/linkit_insert/raw_url/raw_url.js
-+++ b/plugins/linkit_insert/raw_url/raw_url.js
-@@ -5,6 +5,13 @@
- (function ($) {
- Drupal.linkit.registerInsertPlugin('raw_url',  {
-   insert : function(data, settings) {
-+    var pathPrefix = Drupal.settings.pathPrefix;
-+
-+    // Remove language alias prefix from the path when on a page which includes a language alias in it's URL.
-+    if (data.path.indexOf(pathPrefix) === 0 && pathPrefix !== '') {
-+      data.path = data.path.substring(pathPrefix.length);
-+    }
-+
-     return data.path;
-   }
- });
-diff --git a/plugins/linkit_search/entity.class.php b/plugins/linkit_search/entity.class.php
-index 853f6f5..67b4436 100644
---- a/plugins/linkit_search/entity.class.php
-+++ b/plugins/linkit_search/entity.class.php
-@@ -131,6 +131,7 @@ class LinkitSearchPluginEntity extends LinkitSearchPlugin {
-    *   uri of its own.
-    */
-   function createPath($entity) {
-+    global $language;
-     // Create the URI for the entity.
-     $uri = entity_uri($this->plugin['entity_type'], $entity);
+diff --git a/linkit.module b/linkit.module
+index 78f7704..03111d1 100644
+--- a/linkit.module
++++ b/linkit.module
+@@ -21,6 +21,11 @@ define('LINKIT_URL_METHOD_RAW_SLASH', 2);
+ define('LINKIT_URL_METHOD_ALIAS', 3);
  
-@@ -145,8 +146,13 @@ class LinkitSearchPluginEntity extends LinkitSearchPlugin {
-         $options['language'] = $languages[$entity->language];
-       }
+ /**
++ * Define that paths should be constructed as an alias.
++ */
++define('LINKIT_URL_METHOD_ALIAS_NO_SLASH', 4);
++
++/**
+  * Define which query string key Better autocomplete will just.
+  */
+ define('LINKIT_BAC_QUERY_KEY', 's');
+@@ -1154,6 +1159,14 @@ function linkit_get_insert_plugin_processed_path(LinkitProfile $profile, $uri, $
+       case LINKIT_URL_METHOD_ALIAS:
+         $path = url($uri,  $options);
+         break;
++      case LINKIT_URL_METHOD_ALIAS_NO_SLASH:
++        $path = url($uri,  $options);
++        if (language_default()->language != $GLOBALS["language"]->language) {
++          $path = substr($path, strlen("/".$options['language']->language));
++        }
++        $path = ltrim($path, "/");
++        break;
++
      }
-+
-+    $alias = url($uri['path'], array('language' => $language->language));
-+    $alias = trim($alias, '/');
-+
-     // Process the uri with the insert plugin.
--    $path = linkit_get_insert_plugin_processed_path($this->profile, $uri['path'], $options);
-+    $path = trim(linkit_get_insert_plugin_processed_path($this->profile, $alias, $options),'/');
-+
-     return $path;
-   }
  
+     return $path;
+diff --git a/plugins/export_ui/linkit_profiles.inc b/plugins/export_ui/linkit_profiles.inc
+index e49bd07..e95054f 100644
+--- a/plugins/export_ui/linkit_profiles.inc
++++ b/plugins/export_ui/linkit_profiles.inc
+@@ -307,6 +307,12 @@ function _linkit_build_insert_plugin_form_fields(&$form, LinkitProfile $profile)
+       '#description' => t('This will insert the alias for the result item.
+         <br/>The paths will be run through the <em>url()</em> function.', array('%example_link' => 'node/123')),
+     );
++    $form['data']['insert_plugin']['url_method']['#options'][LINKIT_URL_METHOD_ALIAS_NO_SLASH] = t('Alias paths, without a leading slash (/)');
++    $form['data']['insert_plugin']['url_method'][LINKIT_URL_METHOD_ALIAS_NO_SLASH] = array(
++      '#description' => t('This will strip the leading slash from alias for the result item.
++        <br/>The paths will be run through the <em>url()</em> function.'),
++    );
++
+   }
+ }
+ 
+@@ -496,4 +502,4 @@ function linkit_isnumeric_validate($element, &$form_state, $form) {
+   if (!empty($element['#value']) && !is_numeric($element['#value'])) {
+     form_error($element, $element['#title'] . ' should only contains numbers.');
+   }
+-}
+\ No newline at end of file
++}
