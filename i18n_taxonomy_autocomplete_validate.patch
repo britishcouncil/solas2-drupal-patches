@@ -1,0 +1,118 @@
+diff --git a/i18n_taxonomy/i18n_taxonomy.admin.inc b/i18n_taxonomy/i18n_taxonomy.admin.inc
+index bbc35a0..3c6b436 100644
+--- a/i18n_taxonomy/i18n_taxonomy.admin.inc
++++ b/i18n_taxonomy/i18n_taxonomy.admin.inc
+@@ -79,43 +79,6 @@ function i18n_taxonomy_translation_term_form($form, $form_state, $vocabulary, $t
+ }
+ 
+ /**
+- * Form element validate handler for taxonomy term autocomplete element.
+- */
+-function i18n_taxonomy_autocomplete_validate($element, &$form_state) {
+-  // Autocomplete widgets do not send their tids in the form, so we must detect
+-  // them here and process them independently.
+-  $value = array();
+-  if ($tags = $element['#value']) {
+-    // Collect candidate vocabularies.
+-    $vocabulary = $form_state['values']['vocabulary'];
+-    $vocabularies[$vocabulary->vid] = $vocabulary;
+-
+-    // Translate term names into actual terms.
+-    $typed_terms = drupal_explode_tags($tags);
+-    foreach ($typed_terms as $typed_term) {
+-      // See if the term exists in the chosen vocabulary and return the tid;
+-      // otherwise, create a new 'autocreate' term for insert/update.
+-      if ($possibilities = taxonomy_term_load_multiple(array(), array('name' => trim($typed_term), 'vid' => $vocabulary->vid, 'language' => $element['#langcode']))) {
+-        $term = array_pop($possibilities);
+-      }
+-      else {
+-        $vocabulary = reset($vocabularies);
+-        $term = array(
+-          'tid' => 'autocreate',
+-          'vid' => $vocabulary->vid,
+-          'name' => $typed_term,
+-          'vocabulary_machine_name' => $vocabulary->machine_name,
+-          'language' => $element['#langcode'],
+-        );
+-      }
+-      $value[] = (array)$term;
+-    }
+-  }
+-
+-  form_set_value($element, $value, $form_state);
+-}
+-
+-/**
+  * Form callback: Process vocabulary translation form.
+  */
+ function i18n_taxonomy_translation_term_form_submit($form, &$form_state) {
+diff --git a/i18n_taxonomy/i18n_taxonomy.module b/i18n_taxonomy/i18n_taxonomy.module
+index 4053348..49ebe14 100644
+--- a/i18n_taxonomy/i18n_taxonomy.module
++++ b/i18n_taxonomy/i18n_taxonomy.module
+@@ -1261,3 +1261,65 @@ function i18n_taxonomy_modules_enabled($modules) {
+     }
+   }
+ }
++
++/**
++ * Implements hook_field_widget_form_alter().
++ */
++function i18n_field_widget_form_alter(&$element, &$form_state, $context) {
++  if ($context['field']['type'] == 'taxonomy_term_reference') {
++    $element['#element_validate'] = array('i18n_taxonomy_autocomplete_validate');
++  }
++}
++
++/**
++ * Form element validate handler for taxonomy term autocomplete element.
++ */
++function i18n_taxonomy_autocomplete_validate($element, &$form_state) {
++  // Autocomplete widgets do not send their tids in the form, so we must detect
++  // them here and process them independently.
++  $value = array();
++  if ($tags = $element['#value']) {
++    // Collect candidate vocabularies.
++
++    // Admin.
++    if (isset($form_state['values']['vocabulary'])) {
++      $vocabulary = $form_state['values']['vocabulary'];
++      $vocabularies[$vocabulary->vid] = $vocabulary;
++      $language = $element['#langcode'];
++    }
++    // Node field.
++    else {
++      $field = field_widget_field($element, $form_state);
++      $vocabularies = array();
++      foreach ($field['settings']['allowed_values'] as $tree) {
++        if ($vocabulary = taxonomy_vocabulary_machine_name_load($tree['vocabulary'])) {
++          $vocabularies[$vocabulary->vid] = $vocabulary;
++        }
++      }
++      $language = array(i18n_langcode(), LANGUAGE_NONE);
++    }
++
++    // Translate term names into actual terms.
++    $typed_terms = drupal_explode_tags($tags);
++    foreach ($typed_terms as $typed_term) {
++      // See if the term exists in the chosen vocabulary and return the tid;
++      // otherwise, create a new 'autocreate' term for insert/update.
++      if ($possibilities = taxonomy_term_load_multiple(array(), array('name' => trim($typed_term), 'vid' => $vocabulary->vid, 'language' => $language))) {
++        $term = array_pop($possibilities);
++      }
++      else {
++        $vocabulary = reset($vocabularies);
++        $term = array(
++          'tid' => 'autocreate',
++          'vid' => $vocabulary->vid,
++          'name' => $typed_term,
++          'vocabulary_machine_name' => $vocabulary->machine_name,
++          'language' => $language,
++        );
++      }
++      $value[] = (array)$term;
++    }
++  }
++
++  form_set_value($element, $value, $form_state);
++}
