@@ -1,0 +1,13 @@
+diff --git a/restful.info b/restful.info
+index 35d6faf..9c8f64d 100644
+--- a/restful.info
++++ b/restful.info
+@@ -9,6 +9,8 @@ configure = admin/config/services/restful
+ registry_autoload[] = PSR-0
+ registry_autoload[] = PSR-4
+ 
++registry_autoload_files[] = src/Util/ExplorableDecoratorInterface.php
++
+ ; Tests
+ files[] = tests/RestfulAuthenticationTestCase.test
+ files[] = tests/RestfulCommentTestCase.test
