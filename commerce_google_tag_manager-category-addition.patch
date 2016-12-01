@@ -7,7 +7,7 @@ index dcb368a..eae46e4 100644
            'sku' => $line_item_wrapper->commerce_product->sku->value(),
            'name' => $line_item_wrapper->commerce_product->title->value(),
 -          'category' => '',
-+          'category' => $line_item_wrapper->commerce_product->field_product_gtm_category->value(),
++          'category' => $line_item_wrapper->commerce_product->field_product_gtm_category->name->value(),
            'price' => commerce_currency_amount_to_decimal($line_item_wrapper->commerce_unit_price->amount->value(), $line_item_wrapper->commerce_unit_price->currency_code->value()),
            'quantity' => (int) $line_item_wrapper->quantity->value(),
          );
